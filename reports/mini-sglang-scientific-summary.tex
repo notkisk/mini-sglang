@@ -1,0 +1,22 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage[hidelinks]{hyperref}
+
+\title{Mini-SGLang: A Lightweight Framework for Large Language Model Inference}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+Mini-SGLang is a compact inference framework for serving large language models (LLMs), implemented as a readable reference system inspired by SGLang. Its architecture separates request handling from model execution through an API server, tokenizer and detokenizer workers, and scheduler processes. The framework exposes an OpenAI-compatible chat-completion endpoint and supports dense Llama and Qwen3 model families. This modular design provides a practical setting for examining the interaction between request scheduling, GPU computation, and distributed inference.
+
+To improve serving efficiency, Mini-SGLang incorporates several established systems techniques. Its Radix Cache can reuse key--value (KV) cache entries for requests with shared prefixes, while chunked prefill processes long input sequences in smaller segments to limit peak memory consumption. Overlap scheduling aims to hide CPU scheduling overhead behind GPU execution, and tensor parallelism distributes model computation across multiple GPUs. The implementation also supports optimized attention backends, including FlashAttention and FlashInfer, as well as CUDA Graph replay to reduce repeated kernel-launch overhead during decoding. These mechanisms target different sources of inference cost; their benefits depend on model architecture, sequence lengths, workload composition, and hardware.
+
+The project can therefore serve as a basis for controlled studies of large language model serving. For example, an ablation experiment could compare throughput, time to first token, inter-token latency, and peak GPU memory with overlap scheduling enabled and disabled while holding the model, hardware, and request distribution constant. Further experiments could isolate the effects of prefix caching and chunked prefill under workloads with different amounts of shared context and different prompt lengths. Such measurements would help characterize the trade-offs between scheduling complexity, memory use, and user-visible latency without assuming that any individual optimization improves every workload.
+
+\end{document}
