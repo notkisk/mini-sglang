@@ -4,6 +4,8 @@
 \usepackage{lmodern}
 \usepackage{microtype}
 \usepackage{parskip}
+\usepackage{tabularx}
+\usepackage{array}
 \usepackage[hidelinks]{hyperref}
 
 \title{Mini-SGLang: A Lightweight Framework for Large Language Model Inference}
@@ -16,6 +18,25 @@
 Mini-SGLang is a compact inference framework for serving large language models (LLMs), implemented as a readable reference system inspired by SGLang. Its architecture separates request handling from model execution through an API server, tokenizer and detokenizer workers, and scheduler processes. The framework exposes an OpenAI-compatible chat-completion endpoint and supports dense Llama and Qwen3 model families. This modular design provides a practical setting for examining the interaction between request scheduling, GPU computation, and distributed inference.
 
 To improve serving efficiency, Mini-SGLang incorporates several established systems techniques. Its Radix Cache can reuse key--value (KV) cache entries for requests with shared prefixes, while chunked prefill processes long input sequences in smaller segments to limit peak memory consumption. Overlap scheduling aims to hide CPU scheduling overhead behind GPU execution, and tensor parallelism distributes model computation across multiple GPUs. The implementation also supports optimized attention backends, including FlashAttention and FlashInfer, as well as CUDA Graph replay to reduce repeated kernel-launch overhead during decoding. These mechanisms target different sources of inference cost; their benefits depend on model architecture, sequence lengths, workload composition, and hardware.
+
+\begin{table}[htbp]
+\centering
+\caption{Selected Mini-SGLang techniques and their intended roles}
+\label{tab:techniques}
+\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.24\linewidth} X X}
+\hline
+\textbf{Technique} & \textbf{Mechanism} & \textbf{Intended effect} \\
+\hline
+Radix Cache & Reuses KV-cache entries for shared request prefixes. & Reduces repeated computation for matching prefixes. \\
+Chunked prefill & Splits long prompt processing into smaller segments. & Limits peak memory use during prefill. \\
+Overlap scheduling & Overlaps CPU scheduling work with GPU execution. & Can reduce exposed scheduling overhead. \\
+Tensor parallelism & Distributes model computation across multiple GPUs. & Enables serving models across multiple devices. \\
+Attention backends & Uses implementations such as FlashAttention and FlashInfer. & Provides optimized attention computation for supported hardware and phases. \\
+CUDA Graph replay & Captures and replays supported GPU operation sequences. & Can reduce repeated CPU kernel-launch overhead during decoding. \\
+\hline
+\end{tabularx}
+\end{table}
 
 The project can therefore serve as a basis for controlled studies of large language model serving. For example, an ablation experiment could compare throughput, time to first token, inter-token latency, and peak GPU memory with overlap scheduling enabled and disabled while holding the model, hardware, and request distribution constant. Further experiments could isolate the effects of prefix caching and chunked prefill under workloads with different amounts of shared context and different prompt lengths. Such measurements would help characterize the trade-offs between scheduling complexity, memory use, and user-visible latency without assuming that any individual optimization improves every workload.
 
